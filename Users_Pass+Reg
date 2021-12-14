@@ -1,0 +1,137 @@
+package crossover_ca;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Scanner;
+import server_interaction.Table_Interaction;
+
+/**
+ *
+ * @author Liudmial Stolbetskaia
+ */
+public class CheckUsernameAndPassword {
+
+    Table_Interaction connect = new Table_Interaction();
+
+    Scanner sc = new Scanner(System.in);
+    
+    private int user_id ;
+
+    public int getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(int user_id) {
+        this.user_id = user_id;
+    }
+    
+    // метод для проверки юзера в базе данных 
+        public void CheckUsernameAndPassword() throws Exception {
+
+        System.out.println("Type your username, please");
+        String username = sc.next();
+
+        System.out.println("Type your password, please");
+        String password = sc.next();
+
+        try {
+
+            Connection con = connect.connectToTheServer();
+
+            PreparedStatement stm = con.prepareStatement("SELECT user_id,username,password FROM users WHERE username = ? AND password = ?");
+            stm.setString(1, username);
+            stm.setString(2, password);
+
+            ResultSet result = stm.executeQuery();
+
+            if (result.next()) {
+                System.out.println("User is in the table");
+                System.out.println(result.getInt("user_id") + " " + result.getString("username") + " " + result.getString("password"));
+
+            } else {
+                System.out.println("User not found");
+            }
+
+            con.close();
+            stm.close();
+            result.close();
+
+        } catch (Exception e) {
+        }
+
+    }
+    
+    
+    // метод для регистации юзера 
+    
+     public void UserAndPasswordRegistratin() throws Exception {
+
+        try {
+
+            System.out.println("Would you like to register as a user?");
+
+            System.out.println("Type your username");
+            String username = sc.next();
+
+            System.out.println("Type your firstname");
+            String firstname = sc.next();
+
+            System.out.println("Type your secondname");
+            String secondname = sc.next();
+
+            System.out.println("Type your email");
+            String email = sc.next();
+
+            System.out.println("Type your userpassword");
+            String userpassword = sc.next();
+
+           
+            Connection con = connect.connectToTheServer();
+
+            PreparedStatement stm_2 = con.prepareStatement("INSERT INTO users (username, password)" + " VALUES (?, ?)");
+            stm_2.setString(1, username);
+            stm_2.setString(2, userpassword);
+
+            stm_2.executeUpdate();
+
+            PreparedStatement stm_3 = con.prepareStatement("SELECT user_id FROM users WHERE username = '" + username + "' AND password = '" + userpassword + "'");
+            ResultSet result = stm_3.executeQuery();
+
+            while (result.next()) {
+                user_id=(result.getInt("user_id"));
+                //System.out.println(user_id);
+            }
+
+            //     INSERT INTO personal_info (user_id)   SELECT user_id FROM users ;                              
+            PreparedStatement stm = con.prepareStatement("INSERT INTO personal_info (firstname, secondname, email, user_id)" + "VALUES (?, ?, ?, ?)");
+            stm.setString(1, firstname);
+            stm.setString(2, secondname);
+            stm.setString(3, email);
+            stm.setInt(4, this.getUser_id());
+
+            stm.executeUpdate();
+
+            // ResultSet result = stm.executeQuery();
+            //display(result);
+            //user registration 
+            System.out.println("The registration has completed =)");
+            stm.close();
+            con.close();
+            result.close();
+            stm_3.close();
+            stm_2.close();
+
+        } catch (Exception e) {
+        }
+
+    }
+}
+
+// строки дл вызова методов в глваном классе 
+
+CheckUsernameAndPassword np = new CheckUsernameAndPassword();// установка класса 
+        np.CheckUsernameAndPassword();// вызов метода для проверки юзеров
+//       np.UserAndPasswordRegistratin();// вызов метода для егистрации юзеров
+
